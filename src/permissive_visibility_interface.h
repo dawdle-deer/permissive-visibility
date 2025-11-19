@@ -12,9 +12,9 @@ class PermissiveVisibilityInterface : public RefCounted {
 private:
 	bool *losBlockerMap = nullptr;
 	bool **visibilityMap = nullptr; // Note: a multidimensional array of pointers to multidimensional arrays of bools seems pretty inefficient. is this necessary?
-	Vector2 currentOrigin;
-	int width;
-	int height;
+	Vector2 currentOrigin = Vector2(0, 0);
+	int width = 0;
+	int height = 0;
 
 	bool _is_in_bounds(int x, int y);
 

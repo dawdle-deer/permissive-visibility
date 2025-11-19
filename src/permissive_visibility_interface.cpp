@@ -14,28 +14,30 @@ void PermissiveVisibilityInterface::prepare_to_calculate_sightlines(PackedByteAr
 	width = (int)mapSize.x;
 	height = (int)mapSize.y;
 
+	ERR_FAIL_COND_MSG(width <= 0 || height <= 0, "Tried to create map with invalid size!");
+
 	ERR_FAIL_COND_MSG(
 			losBlockerData.is_empty() || ((width * height) != losBlockerData.size()),
 			"Tried to create map, but size of losBlockerData does not match mapSize or is empty!");
 
-	// clear_maps();
+	clear_maps();
 
 	// construct a 2D array out of the 1D array and map size we were passed
 	losBlockerMap = new bool[width * height];
-	visibilityMap = new bool *[width * height];
+	bool **newVisMap = new bool *[width * height];
 
 	// GD.Print("----- Setting up blockers and visibility arrays for map of size ", width,',',height);
 
-	for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
-			// store whether this tile blocks visibility
-			bool tileBlocksVisibility = (losBlockerData[(y * width) + x]) > 0;
-			losBlockerMap[(y * width) + x] = tileBlocksVisibility;
+	for (int i = 0; i < width * height; i++) {
+		// store whether this tile blocks visibility
+		bool tileBlocksVisibility = losBlockerData[i] > 0;
+		losBlockerMap[i] = tileBlocksVisibility;
 
-			// set up the array to store sightlines from this tile
-			// visibilityMap[x,y] = new bool[width, height]; // do this later, once we want to actually calculate it
-		}
+		// set up the array to store sightlines from this tile
+		newVisMap[i] = new bool[width * height];
 	}
+
+	visibilityMap = newVisMap;
 }
 
 bool PermissiveVisibilityInterface::can_tile_see(Vector2 origin, Vector2 target) { // NOTE: why are these arguments Vector2 and not Vector2i?

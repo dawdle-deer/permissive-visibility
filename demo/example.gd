@@ -11,9 +11,9 @@ func _ready() -> void:
 		los_blocker_data,
 		Vector2(3, 3)
 	)
-	#visibility_interface.set_visible(2, 2)
-	#visibility_interface.set_visible(0, 0)
-	##visibility_interface.set_visible(1, 0)
-	#print(visibility_interface.calculate_sightlines_from_tile(0, 0))
+	visibility_interface.set_visible(2, 2)
+	visibility_interface.set_visible(0, 0)
+	#visibility_interface.set_visible(1, 0)
+	print(visibility_interface.calculate_sightlines_from_tile(0, 0))
 	#print(visibility_interface.blocks_light(1, 1))
 	#print(visibility_interface.can_tile_see(Vector2.ZERO, Vector2(2, 2)))
