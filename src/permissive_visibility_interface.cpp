@@ -106,7 +106,7 @@ TypedArray<bool> PermissiveVisibilityInterface::calculate_sightlines_from_tile(i
 
 bool PermissiveVisibilityInterface::blocks_light(int x, int y) {
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
-	return !_is_in_bounds(x, y) || losBlockerMap[x, y];
+	return !_is_in_bounds(x, y) || losBlockerMap[(y * width) + x];
 }
 
 void PermissiveVisibilityInterface::set_visible(int x, int y) {
