@@ -79,7 +79,7 @@ void PermissiveVisibilityInterface::clear_visibility_cache() {
 }
 
 bool *PermissiveVisibilityInterface::_calculate_sightlines_from_tile(int x, int y) {
-	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
+	ERR_FAIL_COND_V_MSG(!_is_map_valid(), nullptr, "Visibility map is invalid!");
 
 	// set up the array to store sightlines from this tile
 	if (visibilityMap[(y * width) + x] != nullptr) {
@@ -112,7 +112,7 @@ bool PermissiveVisibilityInterface::blocks_light(int x, int y) {
 void PermissiveVisibilityInterface::set_visible(int x, int y) {
 	ERR_FAIL_COND_MSG(!_is_map_valid(), "Tried to set tile visibility, but visibility map is invalid!");
 	ERR_FAIL_COND_MSG(!_is_in_bounds(x, y), "Tried to set tile visibility, but coordinates were out of bounds!");
-	bool *los_map = visibilityMap[(int)currentOrigin.x, (int)currentOrigin.y];
+	bool *los_map = visibilityMap[((int)currentOrigin.y * width) + (int)currentOrigin.x];
 	ERR_FAIL_COND_MSG(los_map == nullptr, "Tried to set tile visibility, but LOS map is invalid at the current origin tile!");
 	los_map[(y * width) + x] = true;
 }
