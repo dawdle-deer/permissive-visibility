@@ -17,6 +17,7 @@ private:
 	int height = 0;
 
 	bool _is_in_bounds(int x, int y);
+	bool _is_map_valid();
 
 protected:
 	static void _bind_methods();

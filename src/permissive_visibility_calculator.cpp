@@ -67,10 +67,10 @@ PermissiveVisibilityCalculator::Offset::Offset(int x, int y) {
 
 void PermissiveVisibilityCalculator::compute_quadrant() {
 	const int Infinity = SHRT_MAX;
-	List<Field> activeFields;
+	List<Field> activeFields = List<Field>();
 	activeFields.push_back(
 			Field{
-					new Bump(),
+					new Bump(), // TODO: free Bumps
 					new Bump(),
 					Line(Offset(1, 0), Offset(0, Infinity)),
 					Line(Offset(0, 1), Offset(Infinity, 0)) });

@@ -7,15 +7,34 @@ func test_me() -> void:
 	#var example := ExampleClass.new()
 	#example.print_type(example)
 	var visibility_interface := PermissiveVisibilityInterface.new()
-	var los_blocker_data := PackedByteArray([0, 0, 0, 0, 0, 0, 0, 0, 0])
-	print(los_blocker_data.size())
+	var size := 5
+	var arr := []
+	arr.resize(size * size)
+	arr.fill(0)
+	var los_blocker_data := PackedByteArray(arr)
+	print("Preparing to calculate sightlines")
 	visibility_interface.prepare_to_calculate_sightlines(
 		los_blocker_data,
-		Vector2(3, 3)
+		Vector2(size, size)
 	)
-	#visibility_interface.set_visible(2, 2)
-	#visibility_interface.set_visible(0, 0)
-	#visibility_interface.set_visible(1, 0)
-	print(visibility_interface.calculate_sightlines_from_tile(0, 0))
-	#print(visibility_interface.blocks_light(1, 1))
-	#print(visibility_interface.can_tile_see(Vector2.ZERO, Vector2(2, 2)))
+	print("Calculating sightlines from all tiles")
+	for j in range(size):
+		var row_str := ""
+		for i in range(size):
+			row_str += " " + str(visibility_interface.calculate_sightlines_from_tile(i, j))
+		print(row_str)
+	print("Tiles block light:")
+	for j in range(size):
+		var row_str := ""
+		for i in range(size):
+			row_str += " " + str(visibility_interface.blocks_light(i, j))
+		print(row_str)
+	print("Checking if each tile can see another tile:")
+	for y in range(size):
+		for x in range(size):
+			print("-")
+			for j in range(size):
+				var row_str := ""
+				for i in range(size):
+					row_str += " " + str(visibility_interface.can_tile_see(Vector2(x, y), Vector2(i, j)))
+				print(row_str)

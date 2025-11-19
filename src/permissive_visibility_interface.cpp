@@ -7,7 +7,11 @@
 using namespace godot;
 
 bool PermissiveVisibilityInterface::_is_in_bounds(int x, int y) {
-	return x >= 0 && x < width && y >= 0 && y < height && width > 0 && height > 0;
+	return x >= 0 && x < width && y >= 0 && y < height;
+}
+
+bool PermissiveVisibilityInterface::_is_map_valid() {
+	return width > 0 && height > 0;
 }
 
 void PermissiveVisibilityInterface::prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2 mapSize) { // NOTE: why is mapSize Vector2 and not Vector2i?
@@ -34,22 +38,27 @@ void PermissiveVisibilityInterface::prepare_to_calculate_sightlines(PackedByteAr
 		losBlockerMap[i] = tileBlocksVisibility;
 
 		// set up the array to store sightlines from this tile
-		newVisMap[i] = nullptr; // new bool[width * height]
+		// newVisMap[i] = nullptr; // new bool[width * height]
+		newVisMap[i] = new bool[width * height];
 	}
 
 	visibilityMap = newVisMap;
 }
 
 bool PermissiveVisibilityInterface::can_tile_see(Vector2 origin, Vector2 target) { // NOTE: why are these arguments Vector2 and not Vector2i?
-	TypedArray<bool> visibilityFromOrigin = visibilityMap[((int)origin.y * width) + (int)origin.x];
-	if (visibilityFromOrigin.is_empty()) {
-		visibilityFromOrigin = calculate_sightlines_from_tile((int)origin.x, (int)origin.y);
+	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
+
+	bool *visibilityFromOrigin = visibilityMap[((int)origin.y * width) + (int)origin.x];
+	if (visibilityFromOrigin == nullptr) {
+		visibilityFromOrigin = _calculate_sightlines_from_tile((int)origin.x, (int)origin.y);
+		visibilityMap[((int)origin.y * width) + (int)origin.x] = visibilityFromOrigin;
 	}
 
 	return visibilityFromOrigin[(int)target.x, (int)target.y];
 }
 
 void PermissiveVisibilityInterface::update_los_blocker_for_tile(int x, int y, bool tileBlocksVisibility) {
+	ERR_FAIL_COND_MSG(!_is_map_valid(), "Visibility map is invalid!");
 	// Only update the map if it's different than how it was
 	if ((bool)losBlockerMap[(y * width) + x] != tileBlocksVisibility) {
 		losBlockerMap[(y * width) + x] = tileBlocksVisibility;
@@ -58,6 +67,9 @@ void PermissiveVisibilityInterface::update_los_blocker_for_tile(int x, int y, bo
 }
 
 void PermissiveVisibilityInterface::clear_visibility_cache() {
+	if (visibilityMap == nullptr) {
+		return;
+	}
 	for (int i = 0; i < width * height; i++) {
 		if (visibilityMap[i] != nullptr) {
 			delete[] visibilityMap[i];
@@ -67,13 +79,15 @@ void PermissiveVisibilityInterface::clear_visibility_cache() {
 }
 
 bool *PermissiveVisibilityInterface::_calculate_sightlines_from_tile(int x, int y) {
+	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
+
 	// set up the array to store sightlines from this tile
 	if (visibilityMap[(y * width) + x] != nullptr) {
 		delete[] visibilityMap[(y * width) + x];
 	}
 	visibilityMap[(y * width) + x] = new bool[width * height];
 
-	// TODO: find a better way to make a Callable than a string name :P
+	// TODO: find a better way to make a Callable than a string name?
 	// it should *really* be callable_mp(this, set_visible), but something about that isn't appreciated by scons...
 	PermissiveVisibilityCalculator *visibilityCalculator = memnew(PermissiveVisibilityCalculator);
 	visibilityCalculator->BlocksLight = Callable::create(this, "blocks_light");
@@ -91,10 +105,12 @@ TypedArray<bool> PermissiveVisibilityInterface::calculate_sightlines_from_tile(i
 }
 
 bool PermissiveVisibilityInterface::blocks_light(int x, int y) {
+	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
 	return !_is_in_bounds(x, y) || losBlockerMap[x, y];
 }
 
 void PermissiveVisibilityInterface::set_visible(int x, int y) {
+	ERR_FAIL_COND_MSG(!_is_map_valid(), "Tried to set tile visibility, but visibility map is invalid!");
 	ERR_FAIL_COND_MSG(!_is_in_bounds(x, y), "Tried to set tile visibility, but coordinates were out of bounds!");
 	bool *los_map = visibilityMap[(int)currentOrigin.x, (int)currentOrigin.y];
 	ERR_FAIL_COND_MSG(los_map == nullptr, "Tried to set tile visibility, but LOS map is invalid at the current origin tile!");
