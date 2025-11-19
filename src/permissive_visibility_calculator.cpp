@@ -68,7 +68,12 @@ PermissiveVisibilityCalculator::Offset::Offset(int x, int y) {
 void PermissiveVisibilityCalculator::compute_quadrant() {
 	const int Infinity = SHRT_MAX;
 	List<Field> activeFields;
-	activeFields.push_back(Field{ new Bump(), new Bump(), Line(Offset(1, 0), Offset(0, Infinity)), Line(Offset(0, 1), Offset(Infinity, 0)) });
+	activeFields.push_back(
+			Field{
+					new Bump(),
+					new Bump(),
+					Line(Offset(1, 0), Offset(0, Infinity)),
+					Line(Offset(0, 1), Offset(Infinity, 0)) });
 
 	Offset dest = Offset(0, 0);
 	act_is_blocked(dest);
@@ -91,7 +96,7 @@ bool PermissiveVisibilityCalculator::act_is_blocked(Offset pos) {
 List<PermissiveVisibilityCalculator::Field>::Element *PermissiveVisibilityCalculator::visit_square(Offset dest, List<Field>::Element *currentField, List<Field> activeFields) {
 	Offset topLeft = Offset(dest.x, dest.y + 1), bottomRight = Offset(dest.x + 1, dest.y);
 	while (currentField != nullptr && currentField->get().steep.is_below_or_contains(bottomRight))
-		currentField++;
+		currentField = currentField->next();
 
 	if (currentField == nullptr || currentField->get().shallow.is_above_or_contains(topLeft) || !act_is_blocked(dest))
 		return currentField;
@@ -146,7 +151,7 @@ List<PermissiveVisibilityCalculator::Field>::Element *PermissiveVisibilityCalcul
 	if (currentField->get().shallow.does_contain(currentField->get().steep.near) &&
 			currentField->get().shallow.does_contain(currentField->get().steep.far) &&
 			(currentField->get().shallow.does_contain(Offset(0, 1)) || currentField->get().shallow.does_contain(Offset(1, 0)))) {
-		result++;
+		result = result->next();
 		activeFields.erase(currentField);
 	}
 	return result;

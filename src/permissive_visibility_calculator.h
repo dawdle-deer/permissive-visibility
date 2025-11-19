@@ -23,6 +23,8 @@ public:
 	public:
 		Offset(int x, int y);
 		Offset() = default;
+		~Offset() = default;
+
 		short x, y;
 	};
 
@@ -32,6 +34,8 @@ public:
 	public:
 		Bump(Bump *parent, Offset location);
 		Bump() = default;
+		~Bump() = default;
+
 		Bump *parent;
 		Offset location;
 	};
@@ -42,6 +46,7 @@ public:
 	public:
 		Line(Offset near, Offset far);
 		Line() = default;
+		~Line() = default;
 
 		Offset near, far;
 
