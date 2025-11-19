@@ -34,7 +34,7 @@ void PermissiveVisibilityInterface::prepare_to_calculate_sightlines(PackedByteAr
 		losBlockerMap[i] = tileBlocksVisibility;
 
 		// set up the array to store sightlines from this tile
-		newVisMap[i] = new bool[width * height];
+		newVisMap[i] = nullptr; // new bool[width * height]
 	}
 
 	visibilityMap = newVisMap;
