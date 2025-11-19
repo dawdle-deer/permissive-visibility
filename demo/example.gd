@@ -1,7 +1,9 @@
+@tool
 extends Node
 
+@export_tool_button("Test Me!") var test_me_action = test_me
 
-func _ready() -> void:
+func test_me() -> void:
 	#var example := ExampleClass.new()
 	#example.print_type(example)
 	var visibility_interface := PermissiveVisibilityInterface.new()
@@ -11,8 +13,8 @@ func _ready() -> void:
 		los_blocker_data,
 		Vector2(3, 3)
 	)
-	visibility_interface.set_visible(2, 2)
-	visibility_interface.set_visible(0, 0)
+	#visibility_interface.set_visible(2, 2)
+	#visibility_interface.set_visible(0, 0)
 	#visibility_interface.set_visible(1, 0)
 	print(visibility_interface.calculate_sightlines_from_tile(0, 0))
 	#print(visibility_interface.blocks_light(1, 1))

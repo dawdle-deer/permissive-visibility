@@ -1,3 +1,6 @@
+
+// Based on code by Adam Mil at http://www.adammil.net/blog/v125_roguelike_vision_algorithms.html#permissivecode
+
 #pragma once
 
 #include "godot_cpp/classes/ref_counted.hpp"
@@ -7,19 +10,6 @@
 #include "permissive_visibility_calculator.h"
 
 using namespace godot;
-
-// From Adam Mil at http://www.adammil.net/blog/v125_roguelike_vision_algorithms.html#permissivecode
-
-PermissiveVisibilityCalculator::PermissiveVisibilityCalculator(Callable blocksLight, Callable setVisible) //,
-//								Func<int,int,int> getDistance)
-{
-	BlocksLight = blocksLight;
-	SetVisible = setVisible;
-	//	GetDistance = getDistance;
-
-	source = Offset(0, 0);
-	quadrant = Offset(0, 0);
-}
 
 void PermissiveVisibilityCalculator::compute(Vector2 origin) // , int rangeLimit)
 {

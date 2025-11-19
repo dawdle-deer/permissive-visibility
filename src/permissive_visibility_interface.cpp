@@ -75,9 +75,9 @@ bool *PermissiveVisibilityInterface::_calculate_sightlines_from_tile(int x, int 
 
 	// TODO: find a better way to make a Callable than a string name :P
 	// it should *really* be callable_mp(this, set_visible), but something about that isn't appreciated by scons...
-	PermissiveVisibilityCalculator *visibilityCalculator = new PermissiveVisibilityCalculator(
-			Callable::create(this, "blocks_light"),
-			Callable::create(this, "set_visible"));
+	PermissiveVisibilityCalculator *visibilityCalculator = memnew(PermissiveVisibilityCalculator);
+	visibilityCalculator->BlocksLight = Callable::create(this, "blocks_light");
+	visibilityCalculator->SetVisible = Callable::create(this, "set_visible");
 
 	currentOrigin = Vector2(x, y);
 

@@ -69,28 +69,23 @@ public:
 
 	/// Members
 
-	Callable BlocksLight;
-	//  readonly Func<int, int, int> GetDistance;
-	Callable SetVisible;
-
-	Offset source, quadrant;
-	//  int rangeLimit;
-
-	/// Methods
-
-	// NOTE: Func and Action are C# constructs. I think the best approach is to convert these to Callables.
+	// NOTE: Func and Action are C# constructs. I think the best approach was to convert these to Callables.
 	// This comes with a downside: Callables can't be templated with typed arguments.
 	// I'll look into alternatives, but I think this is a necessary sacrifice in this case.
 
-	/// <param name="blocks_light">A function that accepts the X and Y coordinates of a tile and determines
+	/// @brief A function that accepts the X and Y coordinates of a tile and determines
 	/// whether the given tile blocks the passage of light.
-	/// </param>
-	/// <param name="set_visible">A function that sets a tile to be visible, given its X and Y coordinates.</param>
-	/// <param name="getDistance">A function that takes the X and Y coordinate of a point where X >= 0,
+	Callable BlocksLight;
+	/// @brief A function that sets a tile to be visible, given its X and Y coordinates.
+	Callable SetVisible;
+	/// @brief A function that takes the X and Y coordinate of a point where X >= 0,
 	/// Y >= 0, and X >= Y, and returns the distance from the point to the origin (0,0).
-	/// </param>
-	PermissiveVisibilityCalculator(Callable blocksLight, Callable setVisible); //,
-	//								Func<int,int,int> getDistance);
+	//  Callable GetDistance;
+
+	Offset source = Offset(0, 0), quadrant = Offset(0, 0);
+	//  int rangeLimit;
+
+	/// Methods
 
 	void compute(Vector2 origin); // , int rangeLimit);
 
