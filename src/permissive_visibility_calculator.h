@@ -98,13 +98,13 @@ public:
 
 	bool act_is_blocked(Offset pos);
 
-	List<Field>::Element *visit_square(Offset dest, List<Field>::Element *currentField, List<Field> activeFields);
+	List<Field>::Element *visit_square(Offset dest, List<Field>::Element *currentField, List<Field> *activeFields);
 
 	static void add_shallow_bump(Offset point, List<Field>::Element *currentField);
 
 	static void add_steep_bump(Offset point, List<Field>::Element *currentField);
 
-	static List<Field>::Element *check_field(List<Field>::Element *currentField, List<Field> activeFields);
+	static List<Field>::Element *check_field(List<Field>::Element *currentField, List<Field> *activeFields);
 
 	PermissiveVisibilityCalculator() = default;
 	~PermissiveVisibilityCalculator() override = default;

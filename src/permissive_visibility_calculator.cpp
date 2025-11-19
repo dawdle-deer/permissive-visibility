@@ -82,7 +82,7 @@ void PermissiveVisibilityCalculator::compute_quadrant() {
 		for (int j = 0; j <= i; j++) {
 			dest.x = (short)(i - j);
 			dest.y = (short)j;
-			current = visit_square(dest, current, activeFields);
+			current = visit_square(dest, current, &activeFields);
 		}
 	}
 }
@@ -93,7 +93,7 @@ bool PermissiveVisibilityCalculator::act_is_blocked(Offset pos) {
 	return BlocksLight.call(x, y);
 }
 
-List<PermissiveVisibilityCalculator::Field>::Element *PermissiveVisibilityCalculator::visit_square(Offset dest, List<Field>::Element *currentField, List<Field> activeFields) {
+List<PermissiveVisibilityCalculator::Field>::Element *PermissiveVisibilityCalculator::visit_square(Offset dest, List<Field>::Element *currentField, List<Field> *activeFields) {
 	Offset topLeft = Offset(dest.x, dest.y + 1), bottomRight = Offset(dest.x + 1, dest.y);
 	while (currentField != nullptr && currentField->get().steep.is_below_or_contains(bottomRight))
 		currentField = currentField->next();
@@ -103,7 +103,7 @@ List<PermissiveVisibilityCalculator::Field>::Element *PermissiveVisibilityCalcul
 
 	if (currentField->get().shallow.is_above(bottomRight) && currentField->get().steep.is_below(topLeft)) {
 		List<Field>::Element *next = currentField->next();
-		activeFields.erase(currentField);
+		activeFields->erase(currentField);
 		return next;
 	} else if (currentField->get().shallow.is_above(bottomRight)) {
 		add_shallow_bump(topLeft, currentField);
@@ -112,7 +112,7 @@ List<PermissiveVisibilityCalculator::Field>::Element *PermissiveVisibilityCalcul
 		add_steep_bump(bottomRight, currentField);
 		return check_field(currentField, activeFields);
 	} else {
-		List<Field>::Element *steeper = currentField, *shallower = activeFields.insert_before(currentField, currentField->get());
+		List<Field>::Element *steeper = currentField, *shallower = activeFields->insert_before(currentField, currentField->get());
 		add_steep_bump(bottomRight, shallower);
 		check_field(shallower, activeFields);
 		add_shallow_bump(topLeft, steeper);
@@ -146,13 +146,13 @@ void PermissiveVisibilityCalculator::add_steep_bump(Offset point, List<Field>::E
 	currentField->get() = value;
 }
 
-List<PermissiveVisibilityCalculator::Field>::Element *PermissiveVisibilityCalculator::check_field(List<Field>::Element *currentField, List<Field> activeFields) {
+List<PermissiveVisibilityCalculator::Field>::Element *PermissiveVisibilityCalculator::check_field(List<Field>::Element *currentField, List<Field> *activeFields) {
 	List<Field>::Element *result = currentField;
 	if (currentField->get().shallow.does_contain(currentField->get().steep.near) &&
 			currentField->get().shallow.does_contain(currentField->get().steep.far) &&
 			(currentField->get().shallow.does_contain(Offset(0, 1)) || currentField->get().shallow.does_contain(Offset(1, 0)))) {
 		result = result->next();
-		activeFields.erase(currentField);
+		activeFields->erase(currentField);
 	}
 	return result;
 }
