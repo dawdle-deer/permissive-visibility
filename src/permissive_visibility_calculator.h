@@ -22,6 +22,9 @@ public:
 
 	public:
 		short x, y;
+
+		Offset() = default;
+		Offset(int x, int y);
 	};
 
 	struct Bump {
@@ -73,7 +76,7 @@ public:
 	/// Y >= 0, and X >= Y, and returns the distance from the point to the origin (0,0).
 	//  Callable GetDistance;
 
-	Offset source = Offset{ 0, 0 }, quadrant = Offset{ 0, 0 };
+	Offset source = Offset(0, 0), quadrant = Offset(0, 0);
 	//  int rangeLimit;
 
 	/// Methods

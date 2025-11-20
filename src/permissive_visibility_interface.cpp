@@ -42,7 +42,7 @@ void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedB
 
 	for (int i = 0; i < width * height; i++) {
 		// store whether this tile blocks visibility
-		losBlockerMap[i] = losBlockerData[i] > 0;
+		losBlockerMap[i] = (bool)(losBlockerData[i] > 0);
 
 		// set up the array to store sightlines from this tile
 		newVisMap[i] = nullptr; // new bool[width * height]
