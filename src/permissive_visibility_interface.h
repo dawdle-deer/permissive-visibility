@@ -16,8 +16,10 @@ private:
 	int width = 0;
 	int height = 0;
 
-	bool _is_in_bounds(int x, int y);
-	bool _is_map_valid();
+	inline bool _is_in_bounds(int x, int y);
+	inline bool _is_map_valid();
+	inline int _to_map_index(int x, int y);
+	inline int _to_map_index(Vector2i pos);
 
 protected:
 	static void _bind_methods();

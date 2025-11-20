@@ -6,12 +6,20 @@
 
 using namespace godot;
 
-bool PermissiveVisibilityInterfaceGDExt::_is_in_bounds(int x, int y) {
+inline bool PermissiveVisibilityInterfaceGDExt::_is_in_bounds(int x, int y) {
 	return x >= 0 && x < width && y >= 0 && y < height;
 }
 
-bool PermissiveVisibilityInterfaceGDExt::_is_map_valid() {
+inline bool PermissiveVisibilityInterfaceGDExt::_is_map_valid() {
 	return width > 0 && height > 0;
+}
+
+inline int PermissiveVisibilityInterfaceGDExt::_to_map_index(int x, int y) {
+	return (y * width) + x;
+}
+
+inline int PermissiveVisibilityInterfaceGDExt::_to_map_index(Vector2i pos) {
+	return (pos.y * width) + pos.x;
 }
 
 void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2i mapSize) {
@@ -48,20 +56,20 @@ void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedB
 bool PermissiveVisibilityInterfaceGDExt::can_tile_see(Vector2i origin, Vector2i target) {
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
 
-	bool *visibilityFromOrigin = visibilityMap[((int)origin.y * width) + (int)origin.x];
+	bool *visibilityFromOrigin = visibilityMap[_to_map_index(origin)];
 	if (visibilityFromOrigin == nullptr) {
-		visibilityFromOrigin = _calculate_sightlines_from_tile((int)origin.x, (int)origin.y);
-		visibilityMap[((int)origin.y * width) + (int)origin.x] = visibilityFromOrigin;
+		visibilityFromOrigin = _calculate_sightlines_from_tile(origin.x, origin.y);
+		visibilityMap[_to_map_index(origin)] = visibilityFromOrigin;
 	}
 
-	return visibilityFromOrigin[(int)target.x, (int)target.y];
+	return visibilityFromOrigin[_to_map_index(target)];
 }
 
 void PermissiveVisibilityInterfaceGDExt::update_los_blocker_for_tile(int x, int y, bool tileBlocksVisibility) {
 	ERR_FAIL_COND_MSG(!_is_map_valid(), "Visibility map is invalid!");
 	// Only update the map if it's different than how it was
-	if ((bool)losBlockerMap[(y * width) + x] != tileBlocksVisibility) {
-		losBlockerMap[(y * width) + x] = tileBlocksVisibility;
+	if ((bool)losBlockerMap[_to_map_index(x, y)] != tileBlocksVisibility) {
+		losBlockerMap[_to_map_index(x, y)] = tileBlocksVisibility;
 		clear_visibility_cache();
 	}
 }
@@ -82,10 +90,10 @@ bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x,
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), nullptr, "Visibility map is invalid!");
 
 	// set up the array to store sightlines from this tile
-	if (visibilityMap[(y * width) + x] != nullptr) {
-		delete[] visibilityMap[(y * width) + x];
+	if (visibilityMap[_to_map_index(x, y)] != nullptr) {
+		delete[] visibilityMap[_to_map_index(x, y)];
 	}
-	visibilityMap[(y * width) + x] = new bool[width * height];
+	visibilityMap[_to_map_index(x, y)] = new bool[width * height];
 
 	// TODO: find a better way to make a Callable than a string name?
 	// it should *really* be callable_mp(this, set_visible), but something about that isn't appreciated by scons...
@@ -97,7 +105,7 @@ bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x,
 
 	visibilityCalculator->compute(currentOrigin);
 
-	return visibilityMap[(currentOrigin.y * width) + currentOrigin.x];
+	return visibilityMap[_to_map_index(currentOrigin)];
 }
 
 TypedArray<bool> PermissiveVisibilityInterfaceGDExt::calculate_sightlines_from_tile(int x, int y) {
@@ -106,15 +114,15 @@ TypedArray<bool> PermissiveVisibilityInterfaceGDExt::calculate_sightlines_from_t
 
 bool PermissiveVisibilityInterfaceGDExt::blocks_light(int x, int y) {
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
-	return !_is_in_bounds(x, y) || losBlockerMap[(y * width) + x];
+	return !_is_in_bounds(x, y) || losBlockerMap[_to_map_index(x, y)];
 }
 
 void PermissiveVisibilityInterfaceGDExt::set_visible(int x, int y) {
 	ERR_FAIL_COND_MSG(!_is_map_valid(), "Tried to set tile visibility, but visibility map is invalid!");
 	ERR_FAIL_COND_MSG(!_is_in_bounds(x, y), "Tried to set tile visibility, but coordinates were out of bounds!");
-	bool *los_map = visibilityMap[(currentOrigin.y * width) + currentOrigin.x];
+	bool *los_map = visibilityMap[_to_map_index(currentOrigin)];
 	ERR_FAIL_COND_MSG(los_map == nullptr, "Tried to set tile visibility, but LOS map is invalid at the current origin tile!");
-	los_map[(y * width) + x] = true;
+	los_map[_to_map_index(x, y)] = true;
 }
 
 void PermissiveVisibilityInterfaceGDExt::clear_maps() {

@@ -21,10 +21,6 @@ public:
 		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
-		Offset(int x, int y);
-		Offset() = default;
-		~Offset() = default;
-
 		short x, y;
 	};
 
@@ -32,10 +28,6 @@ public:
 		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
-		Bump(Bump *parent, Offset location);
-		Bump() = default;
-		~Bump() = default;
-
 		Bump *parent;
 		Offset location;
 	};
@@ -44,24 +36,20 @@ public:
 		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
-		Line(Offset near, Offset far);
-		Line() = default;
-		~Line() = default;
-
 		Offset near, far;
 
-		bool is_below(Offset point);
-		bool is_below_or_contains(Offset point);
+		inline bool is_below(Offset point);
+		inline bool is_below_or_contains(Offset point);
 
-		bool is_above(Offset point);
-		bool is_above_or_contains(Offset point);
+		inline bool is_above(Offset point);
+		inline bool is_above_or_contains(Offset point);
 
-		bool does_contain(Offset point);
+		inline bool does_contain(Offset point);
 
 		// negative if the line is above the point.
 		// positive if the line is below the point.
 		// 0 if the line is on the point.
-		int relative_slope(Offset point);
+		inline int relative_slope(Offset point);
 	};
 
 	struct Field {
@@ -70,6 +58,8 @@ public:
 	public:
 		Bump *steepBump, *shallowBump;
 		Line steep, shallow;
+
+		~Field();
 	};
 
 	/// Members
@@ -87,7 +77,7 @@ public:
 	/// Y >= 0, and X >= Y, and returns the distance from the point to the origin (0,0).
 	//  Callable GetDistance;
 
-	Offset source = Offset(0, 0), quadrant = Offset(0, 0);
+	Offset source = Offset{ 0, 0 }, quadrant = Offset{ 0, 0 };
 	//  int rangeLimit;
 
 	/// Methods
