@@ -12,7 +12,7 @@ class PermissiveVisibilityInterfaceGDExt : public RefCounted {
 private:
 	bool *losBlockerMap = nullptr;
 	bool **visibilityMap = nullptr; // Note: a multidimensional array of pointers to multidimensional arrays of bools seems pretty inefficient. is this necessary?
-	Vector2 currentOrigin = Vector2(0, 0);
+	Vector2i currentOrigin = Vector2i(0, 0);
 	int width = 0;
 	int height = 0;
 
@@ -23,9 +23,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2 mapSize); // NOTE: why is mapSize Vector2 and not Vector2i?
+	void prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2i mapSize); // NOTE: why is mapSize Vector2 and not Vector2i?
 
-	bool can_tile_see(Vector2 origin, Vector2 target); // NOTE: why are these arguments Vector2 and not Vector2i?
+	bool can_tile_see(Vector2i origin, Vector2i target); // NOTE: why are these arguments Vector2 and not Vector2i?
 
 	void update_los_blocker_for_tile(int x, int y, bool tileBlocksVisibility);
 

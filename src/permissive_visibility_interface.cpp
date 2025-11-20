@@ -14,7 +14,7 @@ bool PermissiveVisibilityInterfaceGDExt::_is_map_valid() {
 	return width > 0 && height > 0;
 }
 
-void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2 mapSize) { // NOTE: why is mapSize Vector2 and not Vector2i?
+void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2i mapSize) {
 	width = (int)mapSize.x;
 	height = (int)mapSize.y;
 
@@ -45,7 +45,7 @@ void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedB
 	visibilityMap = newVisMap;
 }
 
-bool PermissiveVisibilityInterfaceGDExt::can_tile_see(Vector2 origin, Vector2 target) { // NOTE: why are these arguments Vector2 and not Vector2i?
+bool PermissiveVisibilityInterfaceGDExt::can_tile_see(Vector2i origin, Vector2i target) {
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
 
 	bool *visibilityFromOrigin = visibilityMap[((int)origin.y * width) + (int)origin.x];
@@ -93,11 +93,11 @@ bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x,
 	visibilityCalculator->BlocksLight = Callable::create(this, "blocks_light");
 	visibilityCalculator->SetVisible = Callable::create(this, "set_visible");
 
-	currentOrigin = Vector2(x, y);
+	currentOrigin = Vector2i(x, y);
 
 	visibilityCalculator->compute(currentOrigin);
 
-	return visibilityMap[((int)currentOrigin.y * width) + (int)currentOrigin.x];
+	return visibilityMap[(currentOrigin.y * width) + currentOrigin.x];
 }
 
 TypedArray<bool> PermissiveVisibilityInterfaceGDExt::calculate_sightlines_from_tile(int x, int y) {
@@ -112,7 +112,7 @@ bool PermissiveVisibilityInterfaceGDExt::blocks_light(int x, int y) {
 void PermissiveVisibilityInterfaceGDExt::set_visible(int x, int y) {
 	ERR_FAIL_COND_MSG(!_is_map_valid(), "Tried to set tile visibility, but visibility map is invalid!");
 	ERR_FAIL_COND_MSG(!_is_in_bounds(x, y), "Tried to set tile visibility, but coordinates were out of bounds!");
-	bool *los_map = visibilityMap[((int)currentOrigin.y * width) + (int)currentOrigin.x];
+	bool *los_map = visibilityMap[(currentOrigin.y * width) + currentOrigin.x];
 	ERR_FAIL_COND_MSG(los_map == nullptr, "Tried to set tile visibility, but LOS map is invalid at the current origin tile!");
 	los_map[(y * width) + x] = true;
 }

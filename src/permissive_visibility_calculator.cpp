@@ -11,9 +11,9 @@
 
 using namespace godot;
 
-void PermissiveVisibilityCalculatorGDExt::compute(Vector2 origin) // , int rangeLimit)
+void PermissiveVisibilityCalculatorGDExt::compute(Vector2i origin) // , int rangeLimit)
 {
-	source = Offset((int)origin.x, (int)origin.y);
+	source = Offset(origin.x, origin.y);
 	//	this.rangeLimit = rangeLimit;
 	for (int q = 0; q < 4; q++) {
 		// 1 1    -1 1    -1 -1     1 -1

@@ -92,7 +92,7 @@ public:
 
 	/// Methods
 
-	void compute(Vector2 origin); // , int rangeLimit);
+	void compute(Vector2i origin); // , int rangeLimit);
 
 	void compute_quadrant();
 
