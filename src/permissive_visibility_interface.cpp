@@ -45,7 +45,7 @@ void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedB
 		losBlockerMap[i] = (bool)(losBlockerData[i] > 0);
 
 		// set up the array to store sightlines from this tile
-		newVisMap[i] = nullptr; // new bool[width * height]
+		newVisMap[i] = nullptr;
 		// newVisMap[i] = new bool[width * height];
 	}
 
@@ -96,7 +96,9 @@ bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x,
 	if (visibilityMap[_to_map_index(x, y)] != nullptr) {
 		delete[] visibilityMap[_to_map_index(x, y)];
 	}
-	visibilityMap[_to_map_index(x, y)] = new bool[width * height];
+	bool *los_map = new bool[width * height];
+	memset(los_map, false, width * height);
+	visibilityMap[_to_map_index(x, y)] = los_map;
 
 	PermissiveVisibilityCalculatorGDExt *visibilityCalculator = memnew(PermissiveVisibilityCalculatorGDExt);
 	visibilityCalculator->BlocksLight = Callable::create(this, "blocks_light");
