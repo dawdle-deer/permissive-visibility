@@ -48,10 +48,6 @@ public:
 
 	/// Members
 
-	// NOTE: Func and Action are C# constructs. I think the best approach was to convert these to Callables.
-	// This comes with a downside: Callables can't be templated with typed arguments.
-	// I'll look into alternatives, but I think this is a necessary sacrifice in this case.
-
 	/// @brief A function that accepts the X and Y coordinates of a tile and determines
 	/// whether the given tile blocks the passage of light.
 	Callable BlocksLight;

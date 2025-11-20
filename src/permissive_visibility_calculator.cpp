@@ -11,20 +11,6 @@
 
 using namespace godot;
 
-void PermissiveVisibilityCalculatorGDExt::compute(Vector2i origin) // , int rangeLimit)
-{
-	// print_line("Computing Visibility");
-	source = origin;
-	//	this.rangeLimit = rangeLimit;
-	for (short q = 0; q < 4; q++) {
-		// 1 1    -1 1    -1 -1     1 -1
-		// print_line("Computing Quadrant ", q);
-		quadrant.x = (short)(q == 0 || q == 3 ? 1 : -1);
-		quadrant.y = (short)(q < 2 ? 1 : -1);
-		compute_quadrant();
-	}
-}
-
 inline bool PermissiveVisibilityCalculatorGDExt::Line::is_below(Vector2i point) {
 	return relative_slope(point) > 0;
 }
@@ -52,6 +38,20 @@ inline int PermissiveVisibilityCalculatorGDExt::Line::relative_slope(Vector2i po
 	return (far.y - near.y) * (far.x - point.x) - (far.y - point.y) * (far.x - near.x);
 }
 
+void PermissiveVisibilityCalculatorGDExt::compute(Vector2i origin) // , int rangeLimit)
+{
+	// print_line("Computing Visibility");
+	source = origin;
+	//	this.rangeLimit = rangeLimit;
+	for (unsigned short q = 0; q < 4; q++) {
+		// 1 1    -1 1    -1 -1     1 -1
+		// print_line("Computing Quadrant ", q);
+		quadrant.x = ((q == 0 || q == 3) ? 1 : -1);
+		quadrant.y = (q < 2 ? 1 : -1);
+		compute_quadrant();
+	}
+}
+
 void PermissiveVisibilityCalculatorGDExt::compute_quadrant() {
 	const int Infinity = SHRT_MAX;
 	List<Field> activeFields = List<Field>();
@@ -64,7 +64,7 @@ void PermissiveVisibilityCalculatorGDExt::compute_quadrant() {
 	act_is_blocked(dest);
 	for (short i = 1; i < Infinity && activeFields.size() > 0; i++) {
 		List<Field>::Element *current = activeFields.front();
-		for (short j = 0; j <= i; j++) {
+		for (short j = 0; j <= i && current != nullptr; j++) {
 			dest.x = i - j;
 			dest.y = j;
 			current = visit_square(dest, current, &activeFields);
@@ -115,9 +115,9 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 void PermissiveVisibilityCalculatorGDExt::add_shallow_bump(Vector2i point, List<Field>::Element *currentField) {
 	Field value = currentField->get();
 	value.shallow.far = point;
+	List<Vector2i>::Element *currentBump = value.steepBumps.front();
 	value.shallowBumps.push_front(point);
 	// Look through the list of steep bumps and see if any of them are above the line.
-	List<Vector2i>::Element *currentBump = value.steepBumps.front();
 	while (currentBump != nullptr) {
 		if (value.shallow.is_above(currentBump->get())) {
 			value.shallow.near = currentBump->get();
@@ -130,9 +130,9 @@ void PermissiveVisibilityCalculatorGDExt::add_shallow_bump(Vector2i point, List<
 void PermissiveVisibilityCalculatorGDExt::add_steep_bump(Vector2i point, List<Field>::Element *currentField) {
 	Field value = currentField->get();
 	value.steep.far = point;
+	List<Vector2i>::Element *currentBump = value.shallowBumps.front();
 	value.steepBumps.push_front(point);
 	// Look through the list of shallow bumps and see if any of them are below the line.
-	List<Vector2i>::Element *currentBump = value.shallowBumps.front();
 	while (currentBump != nullptr) {
 		if (value.steep.is_below(currentBump->get())) {
 			value.steep.near = currentBump->get();

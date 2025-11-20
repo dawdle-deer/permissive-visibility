@@ -8,9 +8,11 @@ func test_me() -> void:
 	#example.print_type(example)
 	var visibility_interface := PermissiveVisibilityInterfaceGDExt.new()
 	var size := 5
-	var arr := []
+	var arr : Array[bool] = []
 	arr.resize(size * size)
 	arr.fill(0)
+	for i in range(size * size):
+		arr[i] = randf() > 0.5
 	var los_blocker_data := PackedByteArray(arr)
 	print("Preparing to calculate sightlines")
 	visibility_interface.prepare_to_calculate_sightlines(

@@ -122,7 +122,9 @@ bool PermissiveVisibilityInterfaceGDExt::blocks_light(int x, int y) {
 
 void PermissiveVisibilityInterfaceGDExt::set_visible(int x, int y) {
 	ERR_FAIL_COND_MSG(!_is_map_valid(), "Tried to set tile visibility, but visibility map is invalid!");
-	ERR_FAIL_COND_MSG(!_is_in_bounds(x, y), "Tried to set tile visibility, but coordinates were out of bounds!");
+	if (!_is_in_bounds(x, y)) {
+		return;
+	}
 	bool *los_map = visibilityMap[_to_map_index(currentOrigin)];
 	ERR_FAIL_COND_MSG(los_map == nullptr, "Tried to set tile visibility, but LOS map is invalid at the current origin tile!");
 	los_map[_to_map_index(x, y)] = true;
