@@ -11,21 +11,6 @@
 
 using namespace godot;
 
-PermissiveVisibilityCalculatorGDExt::Bump::~Bump() {
-	if (parent != nullptr) {
-		delete parent;
-	}
-}
-
-PermissiveVisibilityCalculatorGDExt::Field::~Field() {
-	if (steepBump != nullptr) {
-		delete steepBump;
-	}
-	if (shallowBump != nullptr) {
-		delete shallowBump;
-	}
-}
-
 inline bool PermissiveVisibilityCalculatorGDExt::Line::is_below(Offset point) {
 	return relative_slope(point) > 0;
 }
@@ -51,6 +36,26 @@ inline bool PermissiveVisibilityCalculatorGDExt::Line::does_contain(Offset point
 // 0 if the line is on the point.
 inline int PermissiveVisibilityCalculatorGDExt::Line::relative_slope(Offset point) {
 	return (far.y - near.y) * (far.x - point.x) - (far.y - point.y) * (far.x - near.x);
+}
+
+void PermissiveVisibilityCalculatorGDExt::Field::delete_bumps() {
+	if (steepBump != nullptr) {
+		delete steepBump;
+	}
+	if (shallowBump != nullptr) {
+		delete shallowBump;
+	}
+	/*
+	while (steepBump != nullptr) {
+		Bump *b = steepBump;
+		steepBump = steepBump->parent;
+		delete b;
+	}
+	while (shallowBump != nullptr) {
+		Bump *b = shallowBump;
+		shallowBump = shallowBump->parent;
+		delete b;
+	}*/
 }
 
 void PermissiveVisibilityCalculatorGDExt::compute(Vector2i origin) // , int rangeLimit)
@@ -94,8 +99,7 @@ bool PermissiveVisibilityCalculatorGDExt::act_is_blocked(Offset pos) {
 }
 
 List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityCalculatorGDExt::visit_square(Offset dest, List<Field>::Element *currentField, List<Field> *activeFields) {
-	print_line("\tvisit_square (", dest.x, ", ", dest.y, ") ", (int)&currentField->get());
-
+	//print_line("\tvisit_square (", dest.x, ", ", dest.y, ") ", (int)&currentField->get());
 	Offset topLeft = Offset{ dest.x, (short)(dest.y + 1) }, bottomRight = Offset{ (short)(dest.x + 1), (short)dest.y };
 	while (currentField != nullptr && currentField->get().steep.is_below_or_contains(bottomRight)) {
 		currentField = currentField->next();
@@ -110,6 +114,7 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 	if (value.shallow.is_above(bottomRight) && value.steep.is_below(topLeft)) {
 		List<Field>::Element *next = currentField->next();
 		activeFields->erase(currentField);
+		currentField->get().delete_bumps();
 		return next;
 	} else if (value.shallow.is_above(bottomRight)) {
 		add_shallow_bump(topLeft, currentField);
@@ -165,6 +170,7 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 			(value.shallow.does_contain(Offset{ 0, 1 }) || value.shallow.does_contain(Offset{ 1, 0 }))) {
 		result = result->next();
 		activeFields->erase(currentField);
+		currentField->get().delete_bumps();
 	}
 	return result;
 }

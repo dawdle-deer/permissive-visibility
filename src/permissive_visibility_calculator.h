@@ -30,8 +30,6 @@ public:
 	public:
 		Bump *parent;
 		Offset location;
-
-		~Bump();
 	};
 
 	struct Line {
@@ -61,7 +59,7 @@ public:
 		Line steep, shallow;
 		Bump *steepBump = nullptr, *shallowBump = nullptr;
 
-		~Field();
+		void delete_bumps();
 	};
 
 	/// Members
