@@ -92,29 +92,38 @@ void PermissiveVisibilityInterfaceGDExt::clear_visibility_cache() {
 bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x, int y) {
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), nullptr, "Visibility map is invalid!");
 
+	currentOrigin = Vector2i(x, y);
+
 	// set up the array to store sightlines from this tile
-	if (visibilityMap[_to_map_index(x, y)] != nullptr) {
-		delete[] visibilityMap[_to_map_index(x, y)];
+	if (visibilityMap[_to_map_index(currentOrigin)] != nullptr) {
+		delete[] visibilityMap[_to_map_index(currentOrigin)];
 	}
 	bool *los_map = new bool[width * height];
 	memset(los_map, false, width * height);
-	visibilityMap[_to_map_index(x, y)] = los_map;
+	visibilityMap[_to_map_index(currentOrigin)] = los_map;
 
 	PermissiveVisibilityCalculatorGDExt *visibilityCalculator = memnew(PermissiveVisibilityCalculatorGDExt);
 	visibilityCalculator->BlocksLight = Callable::create(this, "blocks_light");
 	visibilityCalculator->SetVisible = Callable::create(this, "set_visible");
 
-	currentOrigin = Vector2i(x, y);
-
 	visibilityCalculator->compute(currentOrigin);
 
 	memdelete(visibilityCalculator);
 
-	return visibilityMap[_to_map_index(currentOrigin)];
+	return los_map;
 }
 
 TypedArray<bool> PermissiveVisibilityInterfaceGDExt::calculate_sightlines_from_tile(int x, int y) {
-	return TypedArray<bool>(_calculate_sightlines_from_tile(x, y));
+	TypedArray<bool> result = TypedArray<bool>();
+	result.resize(width * height);
+	bool *sightlines = _calculate_sightlines_from_tile(x, y);
+	if (sightlines == nullptr) {
+		return result;
+	}
+	for (int i = 0; i < width * height; i++) {
+		result[i] = sightlines[i];
+	}
+	return result;
 }
 
 bool PermissiveVisibilityInterfaceGDExt::blocks_light(int x, int y) {
