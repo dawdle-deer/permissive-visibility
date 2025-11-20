@@ -17,41 +17,24 @@ protected:
 public:
 	/// Data structures
 
-	struct Offset {
-		friend class PermissiveVisibilityCalculatorGDExt;
-
-	public:
-		short x, y;
-	};
-
-	struct Bump {
-		friend class PermissiveVisibilityCalculatorGDExt;
-
-	public:
-		Bump *parent;
-		Offset location;
-
-		~Bump();
-	};
-
 	struct Line {
 		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
-		Offset near, far;
+		Vector2i near, far;
 
-		inline bool is_below(Offset point);
-		inline bool is_below_or_contains(Offset point);
+		inline bool is_below(Vector2i point);
+		inline bool is_below_or_contains(Vector2i point);
 
-		inline bool is_above(Offset point);
-		inline bool is_above_or_contains(Offset point);
+		inline bool is_above(Vector2i point);
+		inline bool is_above_or_contains(Vector2i point);
 
-		inline bool does_contain(Offset point);
+		inline bool does_contain(Vector2i point);
 
 		// negative if the line is above the point.
 		// positive if the line is below the point.
 		// 0 if the line is on the point.
-		inline int relative_slope(Offset point);
+		inline int relative_slope(Vector2i point);
 	};
 
 	struct Field {
@@ -59,9 +42,8 @@ public:
 
 	public:
 		Line steep, shallow;
-		Bump *steepBump = nullptr, *shallowBump = nullptr;
-
-		~Field();
+		List<Vector2i> steepBumps;
+		List<Vector2i> shallowBumps;
 	};
 
 	/// Members
@@ -79,7 +61,7 @@ public:
 	/// Y >= 0, and X >= Y, and returns the distance from the point to the origin (0,0).
 	//  Callable GetDistance;
 
-	Offset source = Offset{ 0, 0 }, quadrant = Offset{ 0, 0 };
+	Vector2i source = Vector2i(0, 0), quadrant = Vector2i(0, 0);
 	//  int rangeLimit;
 
 	/// Methods
@@ -88,13 +70,13 @@ public:
 
 	void compute_quadrant();
 
-	bool act_is_blocked(Offset pos);
+	bool act_is_blocked(Vector2i pos);
 
-	List<Field>::Element *visit_square(Offset dest, List<Field>::Element *currentField, List<Field> *activeFields);
+	List<Field>::Element *visit_square(Vector2i dest, List<Field>::Element *currentField, List<Field> *activeFields);
 
-	static void add_shallow_bump(Offset point, List<Field>::Element *currentField);
+	static void add_shallow_bump(Vector2i point, List<Field>::Element *currentField);
 
-	static void add_steep_bump(Offset point, List<Field>::Element *currentField);
+	static void add_steep_bump(Vector2i point, List<Field>::Element *currentField);
 
 	static List<Field>::Element *check_field(List<Field>::Element *currentField, List<Field> *activeFields);
 
