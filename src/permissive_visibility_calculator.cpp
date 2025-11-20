@@ -24,7 +24,7 @@ void PermissiveVisibilityCalculatorGDExt::compute(Vector2i origin) // , int rang
 }
 
 PermissiveVisibilityCalculatorGDExt::Field::~Field() {
-	if (steepBump != nullptr) {
+	if (steepBump != nullptr && steepBump != shallowBump) {
 		delete steepBump;
 	}
 	if (shallowBump != nullptr) {
@@ -95,18 +95,22 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 	if (currentField == nullptr || currentField->get().shallow.is_above_or_contains(topLeft) || !act_is_blocked(dest))
 		return currentField;
 
-	if (currentField->get().shallow.is_above(bottomRight) && currentField->get().steep.is_below(topLeft)) {
+	Field value = currentField->get();
+
+	if (value.shallow.is_above(bottomRight) && value.steep.is_below(topLeft)) {
 		List<Field>::Element *next = currentField->next();
 		activeFields->erase(currentField);
+		delete value.shallowBump;
+		delete value.steepBump;
 		return next;
-	} else if (currentField->get().shallow.is_above(bottomRight)) {
+	} else if (value.shallow.is_above(bottomRight)) {
 		add_shallow_bump(topLeft, currentField);
 		return check_field(currentField, activeFields);
-	} else if (currentField->get().steep.is_below(topLeft)) {
+	} else if (value.steep.is_below(topLeft)) {
 		add_steep_bump(bottomRight, currentField);
 		return check_field(currentField, activeFields);
 	} else {
-		List<Field>::Element *steeper = currentField, *shallower = activeFields->insert_before(currentField, currentField->get());
+		List<Field>::Element *steeper = currentField, *shallower = activeFields->insert_before(currentField, value);
 		add_steep_bump(bottomRight, shallower);
 		check_field(shallower, activeFields);
 		add_shallow_bump(topLeft, steeper);
@@ -125,7 +129,7 @@ void PermissiveVisibilityCalculatorGDExt::add_shallow_bump(Offset point, List<Fi
 			value.shallow.near = currentBump->location;
 		currentBump = currentBump->parent;
 	}
-	currentField->get() = value;
+	currentField->set(value);
 }
 
 void PermissiveVisibilityCalculatorGDExt::add_steep_bump(Offset point, List<Field>::Element *currentField) {
@@ -137,16 +141,19 @@ void PermissiveVisibilityCalculatorGDExt::add_steep_bump(Offset point, List<Fiel
 		if (value.steep.is_below(currentBump->location))
 			value.steep.near = currentBump->location;
 	}
-	currentField->get() = value;
+	currentField->set(value);
 }
 
 List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityCalculatorGDExt::check_field(List<Field>::Element *currentField, List<Field> *activeFields) {
+	Field value = currentField->get();
 	List<Field>::Element *result = currentField;
-	if (currentField->get().shallow.does_contain(currentField->get().steep.near) &&
-			currentField->get().shallow.does_contain(currentField->get().steep.far) &&
-			(currentField->get().shallow.does_contain(Offset{ 0, 1 }) || currentField->get().shallow.does_contain(Offset{ 1, 0 }))) {
+	if (value.shallow.does_contain(value.steep.near) &&
+			value.shallow.does_contain(value.steep.far) &&
+			(value.shallow.does_contain(Offset{ 0, 1 }) || value.shallow.does_contain(Offset{ 1, 0 }))) {
 		result = result->next();
 		activeFields->erase(currentField);
+		delete value.shallowBump;
+		delete value.steepBump;
 	}
 	return result;
 }
