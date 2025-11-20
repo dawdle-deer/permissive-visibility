@@ -23,8 +23,8 @@ inline int PermissiveVisibilityInterfaceGDExt::_to_map_index(Vector2i pos) {
 }
 
 void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2i mapSize) {
-	width = (int)mapSize.x;
-	height = (int)mapSize.y;
+	width = mapSize.x;
+	height = mapSize.y;
 
 	ERR_FAIL_COND_MSG(width <= 0 || height <= 0, "Tried to create map with invalid size!");
 
@@ -42,12 +42,11 @@ void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedB
 
 	for (int i = 0; i < width * height; i++) {
 		// store whether this tile blocks visibility
-		bool tileBlocksVisibility = losBlockerData[i] > 0;
-		losBlockerMap[i] = tileBlocksVisibility;
+		losBlockerMap[i] = losBlockerData[i] > 0;
 
 		// set up the array to store sightlines from this tile
-		// newVisMap[i] = nullptr; // new bool[width * height]
-		newVisMap[i] = new bool[width * height];
+		newVisMap[i] = nullptr; // new bool[width * height]
+		// newVisMap[i] = new bool[width * height];
 	}
 
 	visibilityMap = newVisMap;
@@ -57,6 +56,7 @@ bool PermissiveVisibilityInterfaceGDExt::can_tile_see(Vector2i origin, Vector2i 
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
 
 	bool *visibilityFromOrigin = visibilityMap[_to_map_index(origin)];
+
 	if (visibilityFromOrigin == nullptr) {
 		visibilityFromOrigin = _calculate_sightlines_from_tile(origin.x, origin.y);
 		visibilityMap[_to_map_index(origin)] = visibilityFromOrigin;
@@ -67,11 +67,14 @@ bool PermissiveVisibilityInterfaceGDExt::can_tile_see(Vector2i origin, Vector2i 
 
 void PermissiveVisibilityInterfaceGDExt::update_los_blocker_for_tile(int x, int y, bool tileBlocksVisibility) {
 	ERR_FAIL_COND_MSG(!_is_map_valid(), "Visibility map is invalid!");
-	// Only update the map if it's different than how it was
-	if ((bool)losBlockerMap[_to_map_index(x, y)] != tileBlocksVisibility) {
-		losBlockerMap[_to_map_index(x, y)] = tileBlocksVisibility;
-		clear_visibility_cache();
+
+	// Only update the map if tile's visibility is changed
+	if (losBlockerMap[_to_map_index(x, y)] == tileBlocksVisibility) {
+		return;
 	}
+
+	losBlockerMap[_to_map_index(x, y)] = tileBlocksVisibility;
+	clear_visibility_cache();
 }
 
 void PermissiveVisibilityInterfaceGDExt::clear_visibility_cache() {
@@ -81,8 +84,8 @@ void PermissiveVisibilityInterfaceGDExt::clear_visibility_cache() {
 	for (int i = 0; i < width * height; i++) {
 		if (visibilityMap[i] != nullptr) {
 			delete[] visibilityMap[i];
+			visibilityMap[i] = nullptr;
 		}
-		visibilityMap[i] = nullptr;
 	}
 }
 
@@ -95,8 +98,6 @@ bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x,
 	}
 	visibilityMap[_to_map_index(x, y)] = new bool[width * height];
 
-	// TODO: find a better way to make a Callable than a string name?
-	// it should *really* be callable_mp(this, set_visible), but something about that isn't appreciated by scons...
 	PermissiveVisibilityCalculatorGDExt *visibilityCalculator = memnew(PermissiveVisibilityCalculatorGDExt);
 	visibilityCalculator->BlocksLight = Callable::create(this, "blocks_light");
 	visibilityCalculator->SetVisible = Callable::create(this, "set_visible");
@@ -104,6 +105,8 @@ bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x,
 	currentOrigin = Vector2i(x, y);
 
 	visibilityCalculator->compute(currentOrigin);
+
+	memdelete(visibilityCalculator);
 
 	return visibilityMap[_to_map_index(currentOrigin)];
 }

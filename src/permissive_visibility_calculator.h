@@ -24,12 +24,14 @@ public:
 		short x, y;
 	};
 
-	class Bump final {
+	struct Bump {
 		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
 		Bump *parent;
 		Offset location;
+
+		~Bump();
 	};
 
 	struct Line {
@@ -56,8 +58,8 @@ public:
 		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
-		Bump *steepBump, *shallowBump;
 		Line steep, shallow;
+		Bump *steepBump = nullptr, *shallowBump = nullptr;
 
 		~Field();
 	};
