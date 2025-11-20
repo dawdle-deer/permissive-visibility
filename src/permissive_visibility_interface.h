@@ -3,6 +3,7 @@
 #include "godot_cpp/classes/ref_counted.hpp"
 
 #include "permissive_visibility_calculator.h"
+#include "permissive_visibility_data.h"
 
 using namespace godot;
 
@@ -10,16 +11,7 @@ class PermissiveVisibilityInterfaceGDExt : public RefCounted {
 	GDCLASS(PermissiveVisibilityInterfaceGDExt, RefCounted)
 
 private:
-	bool *losBlockerMap = nullptr;
-	bool **visibilityMap = nullptr; // Note: a multidimensional array of pointers to multidimensional arrays of bools seems pretty inefficient. is this necessary?
-	Vector2i currentOrigin = Vector2i(0, 0);
-	int width = 0;
-	int height = 0;
-
-	inline bool _is_in_bounds(int x, int y);
-	inline bool _is_map_valid();
-	inline int _to_map_index(int x, int y);
-	inline int _to_map_index(Vector2i pos);
+	PermissiveVisibilityDataGDExt data;
 
 protected:
 	static void _bind_methods();

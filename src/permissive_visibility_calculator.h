@@ -4,7 +4,11 @@
 #include "godot_cpp/templates/list.hpp"
 #include <climits>
 
+#include "permissive_visibility_data.h"
+
 using namespace godot;
+
+const short SHRT_ONE = 1;
 
 // From Adam Mil at http://www.adammil.net/blog/v125_roguelike_vision_algorithms.html#permissivecode
 
@@ -24,7 +28,7 @@ public:
 		short x, y;
 
 		Offset() = default;
-		Offset(int x, int y);
+		Offset(short x, short y);
 	};
 
 	struct Bump {
@@ -67,31 +71,32 @@ public:
 
 	/// Members
 
+	PermissiveVisibilityDataGDExt *data_reference;
 	/// @brief A function that accepts the X and Y coordinates of a tile and determines
 	/// whether the given tile blocks the passage of light.
-	Callable BlocksLight;
+	//bool (PermissiveVisibilityCalculatorGDExt::*BlocksLight)(int, int);
 	/// @brief A function that sets a tile to be visible, given its X and Y coordinates.
-	Callable SetVisible;
+	//void (PermissiveVisibilityCalculatorGDExt::*SetVisible)(int, int);
 	/// @brief A function that takes the X and Y coordinate of a point where X >= 0,
 	/// Y >= 0, and X >= Y, and returns the distance from the point to the origin (0,0).
-	//  Callable GetDistance;
+	//  bool (*GetDistance)(int, int);
 
 	Offset source = Offset(0, 0), quadrant = Offset(0, 0);
 	//  int rangeLimit;
 
 	/// Methods
 
-	void compute(Vector2i origin); // , int rangeLimit);
+	void compute(const Vector2i origin); // , int rangeLimit);
 
 	void compute_quadrant();
 
-	bool act_is_blocked(Offset pos);
+	bool act_is_blocked(const Offset pos) const;
 
-	List<Field>::Element *visit_square(Offset dest, List<Field>::Element *currentField, List<Field> *activeFields);
+	List<Field>::Element *visit_square(const Offset dest, List<Field>::Element *currentField, List<Field> *activeFields);
 
-	static void add_shallow_bump(Offset point, List<Field>::Element *currentField);
+	static void add_shallow_bump(const Offset point, List<Field>::Element *currentField);
 
-	static void add_steep_bump(Offset point, List<Field>::Element *currentField);
+	static void add_steep_bump(const Offset point, List<Field>::Element *currentField);
 
 	static List<Field>::Element *check_field(List<Field>::Element *currentField, List<Field> *activeFields);
 

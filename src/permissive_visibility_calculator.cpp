@@ -11,9 +11,9 @@
 
 using namespace godot;
 
-PermissiveVisibilityCalculatorGDExt::Offset::Offset(int p_x, int p_y) {
-	x = (short)p_x;
-	y = (short)p_y;
+PermissiveVisibilityCalculatorGDExt::Offset::Offset(short p_x, short p_y) {
+	x = p_x;
+	y = p_y;
 }
 
 inline bool PermissiveVisibilityCalculatorGDExt::Line::is_below(Offset point) {
@@ -63,10 +63,10 @@ void PermissiveVisibilityCalculatorGDExt::Field::delete_bumps() {
 	}
 }
 
-void PermissiveVisibilityCalculatorGDExt::compute(Vector2i origin) // , int rangeLimit)
+void PermissiveVisibilityCalculatorGDExt::compute(const Vector2i origin) // , int rangeLimit)
 {
 	// print_line("Computing Visibility");
-	source = Offset(origin.x, origin.y);
+	source = Offset((short)origin.x, (short)origin.y);
 	//	this.rangeLimit = rangeLimit;
 	for (short q = 0; q < 4; q++) {
 		// 1 1    -1 1    -1 -1     1 -1
@@ -82,8 +82,8 @@ void PermissiveVisibilityCalculatorGDExt::compute_quadrant() {
 	List<Field> activeFields = List<Field>();
 	activeFields.push_back(
 			Field{
-					Line{ Offset(1, 0), Offset(0, Infinity) },
-					Line{ Offset(0, 1), Offset(Infinity, 0) } });
+					Line{ Offset(SHRT_ONE, 0), Offset(0, Infinity) },
+					Line{ Offset(0, SHRT_ONE), Offset(Infinity, 0) } });
 
 	Offset dest = Offset(0, 0);
 	act_is_blocked(dest);
@@ -97,16 +97,16 @@ void PermissiveVisibilityCalculatorGDExt::compute_quadrant() {
 	}
 }
 
-bool PermissiveVisibilityCalculatorGDExt::act_is_blocked(Offset pos) {
+bool PermissiveVisibilityCalculatorGDExt::act_is_blocked(const Offset pos) const {
 	int x = pos.x * quadrant.x + source.x, y = pos.y * quadrant.y + source.y;
-	SetVisible.call(x, y);
-	return BlocksLight.call(x, y);
+	data_reference->set_visible(x, y);
+	return data_reference->blocks_light(x, y);
 }
 
-List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityCalculatorGDExt::visit_square(Offset dest, List<Field>::Element *currentField, List<Field> *activeFields) {
+List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityCalculatorGDExt::visit_square(const Offset dest, List<Field>::Element *currentField, List<Field> *activeFields) {
 	//print_line("\tvisit_square (", dest.x, ", ", dest.y, ") ", (int)&currentField->get());
-	Offset topLeft = Offset(dest.x, (short)(dest.y + 1));
-	Offset bottomRight = Offset((short)(dest.x + 1), (short)dest.y);
+	Offset topLeft = Offset(dest.x, dest.y + SHRT_ONE);
+	Offset bottomRight = Offset(dest.x + SHRT_ONE, dest.y);
 	while (currentField != nullptr && currentField->get().steep.is_below_or_contains(bottomRight)) {
 		currentField = currentField->next();
 	}
@@ -138,7 +138,7 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 	}
 }
 
-void PermissiveVisibilityCalculatorGDExt::add_shallow_bump(Offset point, List<Field>::Element *currentField) {
+void PermissiveVisibilityCalculatorGDExt::add_shallow_bump(const Offset point, List<Field>::Element *currentField) {
 	Field value = currentField->get();
 	value.shallow.far = point;
 	value.shallowBump = new Bump{ value.shallowBump, point };
@@ -153,7 +153,7 @@ void PermissiveVisibilityCalculatorGDExt::add_shallow_bump(Offset point, List<Fi
 	currentField->set(value);
 }
 
-void PermissiveVisibilityCalculatorGDExt::add_steep_bump(Offset point, List<Field>::Element *currentField) {
+void PermissiveVisibilityCalculatorGDExt::add_steep_bump(const Offset point, List<Field>::Element *currentField) {
 	Field value = currentField->get();
 	value.steep.far = point;
 	value.steepBump = new Bump{ value.steepBump, point };
@@ -173,7 +173,7 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 	List<Field>::Element *result = currentField;
 	if (value.shallow.does_contain(value.steep.near) &&
 			value.shallow.does_contain(value.steep.far) &&
-			(value.shallow.does_contain(Offset(0, 1)) || value.shallow.does_contain(Offset(1, 0)))) {
+			(value.shallow.does_contain(Offset(0, SHRT_ONE)) || value.shallow.does_contain(Offset(SHRT_ONE, 0)))) {
 		result = result->next();
 		//value.delete_bumps();
 		activeFields->erase(currentField);
