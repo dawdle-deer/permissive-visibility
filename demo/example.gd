@@ -6,7 +6,7 @@ extends Node
 func test_me() -> void:
 	#var example := ExampleClass.new()
 	#example.print_type(example)
-	var visibility_interface := PermissiveVisibilityInterface.new()
+	var visibility_interface := PermissiveVisibilityInterfaceGDExt.new()
 	var size := 5
 	var arr := []
 	arr.resize(size * size)

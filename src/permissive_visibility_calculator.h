@@ -8,8 +8,8 @@ using namespace godot;
 
 // From Adam Mil at http://www.adammil.net/blog/v125_roguelike_vision_algorithms.html#permissivecode
 
-class PermissiveVisibilityCalculator : public RefCounted {
-	GDCLASS(PermissiveVisibilityCalculator, RefCounted)
+class PermissiveVisibilityCalculatorGDExt : public RefCounted {
+	GDCLASS(PermissiveVisibilityCalculatorGDExt, RefCounted)
 
 protected:
 	static void _bind_methods();
@@ -18,7 +18,7 @@ public:
 	/// Data structures
 
 	struct Offset {
-		friend class PermissiveVisibilityCalculator;
+		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
 		Offset(int x, int y);
@@ -29,7 +29,7 @@ public:
 	};
 
 	class Bump final {
-		friend class PermissiveVisibilityCalculator;
+		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
 		Bump(Bump *parent, Offset location);
@@ -41,7 +41,7 @@ public:
 	};
 
 	struct Line {
-		friend class PermissiveVisibilityCalculator;
+		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
 		Line(Offset near, Offset far);
@@ -65,7 +65,7 @@ public:
 	};
 
 	struct Field {
-		friend class PermissiveVisibilityCalculator;
+		friend class PermissiveVisibilityCalculatorGDExt;
 
 	public:
 		Bump *steepBump, *shallowBump;
@@ -106,6 +106,6 @@ public:
 
 	static List<Field>::Element *check_field(List<Field>::Element *currentField, List<Field> *activeFields);
 
-	PermissiveVisibilityCalculator() = default;
-	~PermissiveVisibilityCalculator() override = default;
+	PermissiveVisibilityCalculatorGDExt() = default;
+	~PermissiveVisibilityCalculatorGDExt() override = default;
 };

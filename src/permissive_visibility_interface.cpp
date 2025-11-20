@@ -6,15 +6,15 @@
 
 using namespace godot;
 
-bool PermissiveVisibilityInterface::_is_in_bounds(int x, int y) {
+bool PermissiveVisibilityInterfaceGDExt::_is_in_bounds(int x, int y) {
 	return x >= 0 && x < width && y >= 0 && y < height;
 }
 
-bool PermissiveVisibilityInterface::_is_map_valid() {
+bool PermissiveVisibilityInterfaceGDExt::_is_map_valid() {
 	return width > 0 && height > 0;
 }
 
-void PermissiveVisibilityInterface::prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2 mapSize) { // NOTE: why is mapSize Vector2 and not Vector2i?
+void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedByteArray losBlockerData, Vector2 mapSize) { // NOTE: why is mapSize Vector2 and not Vector2i?
 	width = (int)mapSize.x;
 	height = (int)mapSize.y;
 
@@ -45,7 +45,7 @@ void PermissiveVisibilityInterface::prepare_to_calculate_sightlines(PackedByteAr
 	visibilityMap = newVisMap;
 }
 
-bool PermissiveVisibilityInterface::can_tile_see(Vector2 origin, Vector2 target) { // NOTE: why are these arguments Vector2 and not Vector2i?
+bool PermissiveVisibilityInterfaceGDExt::can_tile_see(Vector2 origin, Vector2 target) { // NOTE: why are these arguments Vector2 and not Vector2i?
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
 
 	bool *visibilityFromOrigin = visibilityMap[((int)origin.y * width) + (int)origin.x];
@@ -57,7 +57,7 @@ bool PermissiveVisibilityInterface::can_tile_see(Vector2 origin, Vector2 target)
 	return visibilityFromOrigin[(int)target.x, (int)target.y];
 }
 
-void PermissiveVisibilityInterface::update_los_blocker_for_tile(int x, int y, bool tileBlocksVisibility) {
+void PermissiveVisibilityInterfaceGDExt::update_los_blocker_for_tile(int x, int y, bool tileBlocksVisibility) {
 	ERR_FAIL_COND_MSG(!_is_map_valid(), "Visibility map is invalid!");
 	// Only update the map if it's different than how it was
 	if ((bool)losBlockerMap[(y * width) + x] != tileBlocksVisibility) {
@@ -66,7 +66,7 @@ void PermissiveVisibilityInterface::update_los_blocker_for_tile(int x, int y, bo
 	}
 }
 
-void PermissiveVisibilityInterface::clear_visibility_cache() {
+void PermissiveVisibilityInterfaceGDExt::clear_visibility_cache() {
 	if (visibilityMap == nullptr) {
 		return;
 	}
@@ -78,7 +78,7 @@ void PermissiveVisibilityInterface::clear_visibility_cache() {
 	}
 }
 
-bool *PermissiveVisibilityInterface::_calculate_sightlines_from_tile(int x, int y) {
+bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x, int y) {
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), nullptr, "Visibility map is invalid!");
 
 	// set up the array to store sightlines from this tile
@@ -89,7 +89,7 @@ bool *PermissiveVisibilityInterface::_calculate_sightlines_from_tile(int x, int 
 
 	// TODO: find a better way to make a Callable than a string name?
 	// it should *really* be callable_mp(this, set_visible), but something about that isn't appreciated by scons...
-	PermissiveVisibilityCalculator *visibilityCalculator = memnew(PermissiveVisibilityCalculator);
+	PermissiveVisibilityCalculatorGDExt *visibilityCalculator = memnew(PermissiveVisibilityCalculatorGDExt);
 	visibilityCalculator->BlocksLight = Callable::create(this, "blocks_light");
 	visibilityCalculator->SetVisible = Callable::create(this, "set_visible");
 
@@ -100,16 +100,16 @@ bool *PermissiveVisibilityInterface::_calculate_sightlines_from_tile(int x, int 
 	return visibilityMap[((int)currentOrigin.y * width) + (int)currentOrigin.x];
 }
 
-TypedArray<bool> PermissiveVisibilityInterface::calculate_sightlines_from_tile(int x, int y) {
+TypedArray<bool> PermissiveVisibilityInterfaceGDExt::calculate_sightlines_from_tile(int x, int y) {
 	return TypedArray<bool>(_calculate_sightlines_from_tile(x, y));
 }
 
-bool PermissiveVisibilityInterface::blocks_light(int x, int y) {
+bool PermissiveVisibilityInterfaceGDExt::blocks_light(int x, int y) {
 	ERR_FAIL_COND_V_MSG(!_is_map_valid(), false, "Visibility map is invalid!");
 	return !_is_in_bounds(x, y) || losBlockerMap[(y * width) + x];
 }
 
-void PermissiveVisibilityInterface::set_visible(int x, int y) {
+void PermissiveVisibilityInterfaceGDExt::set_visible(int x, int y) {
 	ERR_FAIL_COND_MSG(!_is_map_valid(), "Tried to set tile visibility, but visibility map is invalid!");
 	ERR_FAIL_COND_MSG(!_is_in_bounds(x, y), "Tried to set tile visibility, but coordinates were out of bounds!");
 	bool *los_map = visibilityMap[((int)currentOrigin.y * width) + (int)currentOrigin.x];
@@ -117,7 +117,7 @@ void PermissiveVisibilityInterface::set_visible(int x, int y) {
 	los_map[(y * width) + x] = true;
 }
 
-void PermissiveVisibilityInterface::clear_maps() {
+void PermissiveVisibilityInterfaceGDExt::clear_maps() {
 	if (losBlockerMap != nullptr) {
 		delete[] losBlockerMap;
 	}
@@ -131,16 +131,16 @@ void PermissiveVisibilityInterface::clear_maps() {
 	}
 }
 
-PermissiveVisibilityInterface::~PermissiveVisibilityInterface() {
+PermissiveVisibilityInterfaceGDExt::~PermissiveVisibilityInterfaceGDExt() {
 	clear_maps();
 }
 
-void PermissiveVisibilityInterface::_bind_methods() {
-	godot::ClassDB::bind_method(D_METHOD("prepare_to_calculate_sightlines", "losBlockerData", "mapSize"), &PermissiveVisibilityInterface::prepare_to_calculate_sightlines);
-	godot::ClassDB::bind_method(D_METHOD("can_tile_see", "origin", "target"), &PermissiveVisibilityInterface::can_tile_see);
-	godot::ClassDB::bind_method(D_METHOD("update_los_blocker_for_tile", "x", "y", "tileBlocksVisibility"), &PermissiveVisibilityInterface::update_los_blocker_for_tile);
-	godot::ClassDB::bind_method(D_METHOD("clear_visibility_cache"), &PermissiveVisibilityInterface::clear_visibility_cache);
-	godot::ClassDB::bind_method(D_METHOD("calculate_sightlines_from_tile", "x", "y"), &PermissiveVisibilityInterface::calculate_sightlines_from_tile);
-	godot::ClassDB::bind_method(D_METHOD("blocks_light", "x", "y"), &PermissiveVisibilityInterface::blocks_light);
-	godot::ClassDB::bind_method(D_METHOD("set_visible", "x", "y"), &PermissiveVisibilityInterface::set_visible);
+void PermissiveVisibilityInterfaceGDExt::_bind_methods() {
+	godot::ClassDB::bind_method(D_METHOD("prepare_to_calculate_sightlines", "losBlockerData", "mapSize"), &PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines);
+	godot::ClassDB::bind_method(D_METHOD("can_tile_see", "origin", "target"), &PermissiveVisibilityInterfaceGDExt::can_tile_see);
+	godot::ClassDB::bind_method(D_METHOD("update_los_blocker_for_tile", "x", "y", "tileBlocksVisibility"), &PermissiveVisibilityInterfaceGDExt::update_los_blocker_for_tile);
+	godot::ClassDB::bind_method(D_METHOD("clear_visibility_cache"), &PermissiveVisibilityInterfaceGDExt::clear_visibility_cache);
+	godot::ClassDB::bind_method(D_METHOD("calculate_sightlines_from_tile", "x", "y"), &PermissiveVisibilityInterfaceGDExt::calculate_sightlines_from_tile);
+	godot::ClassDB::bind_method(D_METHOD("blocks_light", "x", "y"), &PermissiveVisibilityInterfaceGDExt::blocks_light);
+	godot::ClassDB::bind_method(D_METHOD("set_visible", "x", "y"), &PermissiveVisibilityInterfaceGDExt::set_visible);
 }

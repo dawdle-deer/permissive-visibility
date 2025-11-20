@@ -14,8 +14,8 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	GDREGISTER_CLASS(PermissiveVisibilityCalculator);
-	GDREGISTER_CLASS(PermissiveVisibilityInterface);
+	GDREGISTER_CLASS(PermissiveVisibilityCalculatorGDExt);
+	GDREGISTER_CLASS(PermissiveVisibilityInterfaceGDExt);
 }
 
 void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {

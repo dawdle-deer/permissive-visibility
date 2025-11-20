@@ -6,8 +6,8 @@
 
 using namespace godot;
 
-class PermissiveVisibilityInterface : public RefCounted {
-	GDCLASS(PermissiveVisibilityInterface, RefCounted)
+class PermissiveVisibilityInterfaceGDExt : public RefCounted {
+	GDCLASS(PermissiveVisibilityInterfaceGDExt, RefCounted)
 
 private:
 	bool *losBlockerMap = nullptr;
@@ -40,6 +40,6 @@ public:
 
 	void clear_maps();
 
-	PermissiveVisibilityInterface() = default;
-	~PermissiveVisibilityInterface();
+	PermissiveVisibilityInterfaceGDExt() = default;
+	~PermissiveVisibilityInterfaceGDExt();
 };
