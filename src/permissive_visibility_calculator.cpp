@@ -11,43 +11,58 @@
 
 using namespace godot;
 
-inline bool PermissiveVisibilityCalculatorGDExt::Line::is_below(Vector2i point) {
+PermissiveVisibilityCalculatorGDExt::Bump::~Bump() {
+	if (parent != nullptr) {
+		delete parent;
+	}
+}
+
+PermissiveVisibilityCalculatorGDExt::Field::~Field() {
+	if (steepBump != nullptr) {
+		delete steepBump;
+	}
+	if (shallowBump != nullptr) {
+		delete shallowBump;
+	}
+}
+
+inline bool PermissiveVisibilityCalculatorGDExt::Line::is_below(Offset point) {
 	return relative_slope(point) > 0;
 }
 
-inline bool PermissiveVisibilityCalculatorGDExt::Line::is_below_or_contains(Vector2i point) {
+inline bool PermissiveVisibilityCalculatorGDExt::Line::is_below_or_contains(Offset point) {
 	return relative_slope(point) >= 0;
 }
 
-inline bool PermissiveVisibilityCalculatorGDExt::Line::is_above(Vector2i point) {
+inline bool PermissiveVisibilityCalculatorGDExt::Line::is_above(Offset point) {
 	return relative_slope(point) < 0;
 }
 
-inline bool PermissiveVisibilityCalculatorGDExt::Line::is_above_or_contains(Vector2i point) {
+inline bool PermissiveVisibilityCalculatorGDExt::Line::is_above_or_contains(Offset point) {
 	return relative_slope(point) <= 0;
 }
 
-inline bool PermissiveVisibilityCalculatorGDExt::Line::does_contain(Vector2i point) {
+inline bool PermissiveVisibilityCalculatorGDExt::Line::does_contain(Offset point) {
 	return relative_slope(point) == 0;
 }
 
 // negative if the line is above the point.
 // positive if the line is below the point.
 // 0 if the line is on the point.
-inline int PermissiveVisibilityCalculatorGDExt::Line::relative_slope(Vector2i point) {
+inline int PermissiveVisibilityCalculatorGDExt::Line::relative_slope(Offset point) {
 	return (far.y - near.y) * (far.x - point.x) - (far.y - point.y) * (far.x - near.x);
 }
 
 void PermissiveVisibilityCalculatorGDExt::compute(Vector2i origin) // , int rangeLimit)
 {
 	// print_line("Computing Visibility");
-	source = origin;
+	source = Offset{ (short)origin.x, (short)origin.y };
 	//	this.rangeLimit = rangeLimit;
-	for (unsigned short q = 0; q < 4; q++) {
+	for (short q = 0; q < 4; q++) {
 		// 1 1    -1 1    -1 -1     1 -1
 		// print_line("Computing Quadrant ", q);
-		quadrant.x = ((q == 0 || q == 3) ? 1 : -1);
-		quadrant.y = (q < 2 ? 1 : -1);
+		quadrant.x = (short)(q == 0 || q == 3 ? 1 : -1);
+		quadrant.y = (short)(q < 2 ? 1 : -1);
 		compute_quadrant();
 	}
 }
@@ -57,10 +72,10 @@ void PermissiveVisibilityCalculatorGDExt::compute_quadrant() {
 	List<Field> activeFields = List<Field>();
 	activeFields.push_back(
 			Field{
-					Line{ Vector2i{ 1, 0 }, Vector2i{ 0, Infinity } },
-					Line{ Vector2i{ 0, 1 }, Vector2i{ Infinity, 0 } } });
+					Line{ Offset{ 1, 0 }, Offset{ 0, Infinity } },
+					Line{ Offset{ 0, 1 }, Offset{ Infinity, 0 } } });
 
-	Vector2i dest = Vector2i(0, 0);
+	Offset dest = Offset{ 0, 0 };
 	act_is_blocked(dest);
 	for (short i = 1; i < Infinity && activeFields.size() > 0; i++) {
 		List<Field>::Element *current = activeFields.front();
@@ -72,16 +87,16 @@ void PermissiveVisibilityCalculatorGDExt::compute_quadrant() {
 	}
 }
 
-bool PermissiveVisibilityCalculatorGDExt::act_is_blocked(Vector2i pos) {
+bool PermissiveVisibilityCalculatorGDExt::act_is_blocked(Offset pos) {
 	int x = pos.x * quadrant.x + source.x, y = pos.y * quadrant.y + source.y;
 	SetVisible.call(x, y);
 	return BlocksLight.call(x, y);
 }
 
-List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityCalculatorGDExt::visit_square(Vector2i dest, List<Field>::Element *currentField, List<Field> *activeFields) {
-	// print_line("\tvisit_square (", dest.x, ", ", dest.y, ") ", (int)&currentField->get());
-	Vector2i topLeft = Vector2i(dest.x, (short)(dest.y + 1));
-	Vector2i bottomRight = Vector2i((short)(dest.x + 1), (short)dest.y);
+List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityCalculatorGDExt::visit_square(Offset dest, List<Field>::Element *currentField, List<Field> *activeFields) {
+	print_line("\tvisit_square (", dest.x, ", ", dest.y, ") ", (int)&currentField->get());
+
+	Offset topLeft = Offset{ dest.x, (short)(dest.y + 1) }, bottomRight = Offset{ (short)(dest.x + 1), (short)dest.y };
 	while (currentField != nullptr && currentField->get().steep.is_below_or_contains(bottomRight)) {
 		currentField = currentField->next();
 	}
@@ -112,32 +127,32 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 	}
 }
 
-void PermissiveVisibilityCalculatorGDExt::add_shallow_bump(Vector2i point, List<Field>::Element *currentField) {
+void PermissiveVisibilityCalculatorGDExt::add_shallow_bump(Offset point, List<Field>::Element *currentField) {
 	Field value = currentField->get();
 	value.shallow.far = point;
-	List<Vector2i>::Element *currentBump = value.steepBumps.front();
-	value.shallowBumps.push_front(point);
+	value.shallowBump = new Bump{ value.shallowBump, point };
 	// Look through the list of steep bumps and see if any of them are above the line.
+	Bump *currentBump = value.steepBump;
 	while (currentBump != nullptr) {
-		if (value.shallow.is_above(currentBump->get())) {
-			value.shallow.near = currentBump->get();
+		if (value.shallow.is_above(currentBump->location)) {
+			value.shallow.near = currentBump->location;
 		}
-		currentBump = currentBump->next();
+		currentBump = currentBump->parent;
 	}
 	currentField->set(value);
 }
 
-void PermissiveVisibilityCalculatorGDExt::add_steep_bump(Vector2i point, List<Field>::Element *currentField) {
+void PermissiveVisibilityCalculatorGDExt::add_steep_bump(Offset point, List<Field>::Element *currentField) {
 	Field value = currentField->get();
 	value.steep.far = point;
-	List<Vector2i>::Element *currentBump = value.shallowBumps.front();
-	value.steepBumps.push_front(point);
+	value.steepBump = new Bump{ value.steepBump, point };
 	// Look through the list of shallow bumps and see if any of them are below the line.
+	Bump *currentBump = value.shallowBump;
 	while (currentBump != nullptr) {
-		if (value.steep.is_below(currentBump->get())) {
-			value.steep.near = currentBump->get();
+		if (value.steep.is_below(currentBump->location)) {
+			value.steep.near = currentBump->location;
 		}
-		currentBump = currentBump->next();
+		currentBump = currentBump->parent;
 	}
 	currentField->set(value);
 }
@@ -147,7 +162,7 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 	List<Field>::Element *result = currentField;
 	if (value.shallow.does_contain(value.steep.near) &&
 			value.shallow.does_contain(value.steep.far) &&
-			(value.shallow.does_contain(Vector2i(0, 1)) || value.shallow.does_contain(Vector2i(1, 0)))) {
+			(value.shallow.does_contain(Offset{ 0, 1 }) || value.shallow.does_contain(Offset{ 1, 0 }))) {
 		result = result->next();
 		activeFields->erase(currentField);
 	}
