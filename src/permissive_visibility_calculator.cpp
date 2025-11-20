@@ -39,13 +39,13 @@ inline int PermissiveVisibilityCalculatorGDExt::Line::relative_slope(Offset poin
 }
 
 void PermissiveVisibilityCalculatorGDExt::Field::delete_bumps() {
-	if (steepBump != nullptr) {
+	/*if (steepBump != nullptr) {
 		delete steepBump;
 	}
 	if (shallowBump != nullptr) {
 		delete shallowBump;
-	}
-	/*
+	}*/
+
 	while (steepBump != nullptr) {
 		Bump *b = steepBump;
 		steepBump = steepBump->parent;
@@ -55,7 +55,7 @@ void PermissiveVisibilityCalculatorGDExt::Field::delete_bumps() {
 		Bump *b = shallowBump;
 		shallowBump = shallowBump->parent;
 		delete b;
-	}*/
+	}
 }
 
 void PermissiveVisibilityCalculatorGDExt::compute(Vector2i origin) // , int rangeLimit)
@@ -113,8 +113,8 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 
 	if (value.shallow.is_above(bottomRight) && value.steep.is_below(topLeft)) {
 		List<Field>::Element *next = currentField->next();
+		value.delete_bumps();
 		activeFields->erase(currentField);
-		currentField->get().delete_bumps();
 		return next;
 	} else if (value.shallow.is_above(bottomRight)) {
 		add_shallow_bump(topLeft, currentField);
@@ -123,8 +123,8 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 		add_steep_bump(bottomRight, currentField);
 		return check_field(currentField, activeFields);
 	} else {
-		List<Field>::Element *steeper = currentField;
 		List<Field>::Element *shallower = activeFields->insert_before(currentField, value);
+		List<Field>::Element *steeper = shallower->next(); // currentField appears to be invalidated by insert_before, so we grab the element again
 		add_steep_bump(bottomRight, shallower);
 		check_field(shallower, activeFields);
 		add_shallow_bump(topLeft, steeper);
@@ -169,8 +169,8 @@ List<PermissiveVisibilityCalculatorGDExt::Field>::Element *PermissiveVisibilityC
 			value.shallow.does_contain(value.steep.far) &&
 			(value.shallow.does_contain(Offset{ 0, 1 }) || value.shallow.does_contain(Offset{ 1, 0 }))) {
 		result = result->next();
+		value.delete_bumps();
 		activeFields->erase(currentField);
-		currentField->get().delete_bumps();
 	}
 	return result;
 }
