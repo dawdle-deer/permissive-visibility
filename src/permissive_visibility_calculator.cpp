@@ -1,8 +1,6 @@
 
 // Based on code by Adam Mil at http://www.adammil.net/blog/v125_roguelike_vision_algorithms.html#permissivecode
 
-#pragma once
-
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/templates/list.hpp"
 #include <climits>

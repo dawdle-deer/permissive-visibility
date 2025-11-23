@@ -1,5 +1,3 @@
-#pragma once
-
 #include "godot_cpp/variant/callable.hpp"
 
 #include "permissive_visibility_interface.h"
@@ -11,27 +9,27 @@ void PermissiveVisibilityInterfaceGDExt::prepare_to_calculate_sightlines(PackedB
 }
 
 bool PermissiveVisibilityInterfaceGDExt::can_tile_see(Vector2i origin, Vector2i target) {
-	ERR_FAIL_COND_V_MSG(!data._is_map_valid(), false, "Visibility map is invalid!");
+	ERR_FAIL_COND_V_MSG(!data.is_map_valid(), false, "Visibility map is invalid!");
 
-	bool *visibilityFromOrigin = data.visibilityMap[data._to_map_index(origin)];
+	bool *visibilityFromOrigin = data.visibilityMap[data.to_map_index(origin)];
 
 	if (visibilityFromOrigin == nullptr) {
 		visibilityFromOrigin = _calculate_sightlines_from_tile(origin.x, origin.y);
-		data.visibilityMap[data._to_map_index(origin)] = visibilityFromOrigin;
+		data.visibilityMap[data.to_map_index(origin)] = visibilityFromOrigin;
 	}
 
-	return visibilityFromOrigin[data._to_map_index(target)];
+	return visibilityFromOrigin[data.to_map_index(target)];
 }
 
 void PermissiveVisibilityInterfaceGDExt::update_los_blocker_for_tile(int x, int y, bool tileBlocksVisibility) {
-	ERR_FAIL_COND_MSG(!data._is_map_valid(), "Visibility map is invalid!");
+	ERR_FAIL_COND_MSG(!data.is_map_valid(), "Visibility map is invalid!");
 
 	// Only update the map if tile's visibility is changed
-	if (data.losBlockerMap[data._to_map_index(x, y)] == tileBlocksVisibility) {
+	if (data.losBlockerMap[data.to_map_index(x, y)] == tileBlocksVisibility) {
 		return;
 	}
 
-	data.losBlockerMap[data._to_map_index(x, y)] = tileBlocksVisibility;
+	data.losBlockerMap[data.to_map_index(x, y)] = tileBlocksVisibility;
 	clear_visibility_cache();
 }
 
@@ -40,17 +38,17 @@ void PermissiveVisibilityInterfaceGDExt::clear_visibility_cache() {
 }
 
 bool *PermissiveVisibilityInterfaceGDExt::_calculate_sightlines_from_tile(int x, int y) {
-	ERR_FAIL_COND_V_MSG(!data._is_map_valid(), nullptr, "Visibility map is invalid!");
+	ERR_FAIL_COND_V_MSG(!data.is_map_valid(), nullptr, "Visibility map is invalid!");
 
 	data.currentOrigin = Vector2i(x, y);
 
 	// set up the array to store sightlines from this tile
-	if (data.visibilityMap[data._to_map_index(data.currentOrigin)] != nullptr) {
-		delete[] data.visibilityMap[data._to_map_index(data.currentOrigin)];
+	if (data.visibilityMap[data.to_map_index(data.currentOrigin)] != nullptr) {
+		delete[] data.visibilityMap[data.to_map_index(data.currentOrigin)];
 	}
 	bool *los_map = new bool[data.width * data.height];
 	memset(los_map, false, data.width * data.height);
-	data.visibilityMap[data._to_map_index(data.currentOrigin)] = los_map;
+	data.visibilityMap[data.to_map_index(data.currentOrigin)] = los_map;
 
 	PermissiveVisibilityCalculatorGDExt *visibilityCalculator = memnew(PermissiveVisibilityCalculatorGDExt);
 	visibilityCalculator->data_reference = &data;

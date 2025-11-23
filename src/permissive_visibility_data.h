@@ -12,10 +12,10 @@ public:
 	int width = 0;
 	int height = 0;
 
-	inline bool _is_in_bounds(int x, int y);
-	inline bool _is_map_valid();
-	inline int _to_map_index(int x, int y);
-	inline int _to_map_index(Vector2i pos);
+	bool is_in_bounds(int x, int y);
+	bool is_map_valid();
+	int to_map_index(int x, int y);
+	int to_map_index(Vector2i pos);
 
 	void initialize_map(PackedByteArray losBlockerData, Vector2i mapSize);
 
