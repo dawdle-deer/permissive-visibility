@@ -3,6 +3,7 @@
 
 using namespace godot;
 
+extern "C" {
 bool PermissiveVisibilityDataGDExt::is_in_bounds(int x, int y) {
 	return x >= 0 && x < width && y >= 0 && y < height;
 }
@@ -17,6 +18,7 @@ int PermissiveVisibilityDataGDExt::to_map_index(int x, int y) {
 
 int PermissiveVisibilityDataGDExt::to_map_index_v(Vector2i pos) {
 	return (pos.y * width) + pos.x;
+}
 }
 
 void PermissiveVisibilityDataGDExt::initialize_map(PackedByteArray losBlockerData, Vector2i mapSize) {

@@ -6,6 +6,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "permissive_visibility_calculator.h"
+#include "permissive_visibility_data.h"
 #include "permissive_visibility_interface.h"
 
 using namespace godot;

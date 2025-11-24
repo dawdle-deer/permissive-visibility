@@ -1,5 +1,6 @@
 #include "godot_cpp/variant/callable.hpp"
 
+#include "permissive_visibility_data.h"
 #include "permissive_visibility_interface.h"
 
 using namespace godot;
