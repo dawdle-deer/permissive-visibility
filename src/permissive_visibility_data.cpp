@@ -15,7 +15,7 @@ int PermissiveVisibilityDataGDExt::to_map_index(int x, int y) {
 	return (y * width) + x;
 }
 
-int PermissiveVisibilityDataGDExt::to_map_index(Vector2i pos) {
+int PermissiveVisibilityDataGDExt::to_map_index_v(Vector2i pos) {
 	return (pos.y * width) + pos.x;
 }
 
@@ -59,7 +59,7 @@ void PermissiveVisibilityDataGDExt::set_visible(int x, int y) {
 	if (!is_in_bounds(x, y)) {
 		return;
 	}
-	bool *los_map = visibilityMap[to_map_index(currentOrigin)];
+	bool *los_map = visibilityMap[to_map_index_v(currentOrigin)];
 	ERR_FAIL_COND_MSG(los_map == nullptr, "Tried to set tile visibility, but LOS map is invalid at the current origin tile!");
 	los_map[to_map_index(x, y)] = true;
 }
@@ -88,4 +88,16 @@ void PermissiveVisibilityDataGDExt::clear_visibility_cache() {
 			visibilityMap[i] = nullptr;
 		}
 	}
+}
+
+void PermissiveVisibilityDataGDExt::_bind_methods() {
+	godot::ClassDB::bind_method(D_METHOD("is_in_bounds", "x", "y"), &PermissiveVisibilityDataGDExt::is_in_bounds);
+	godot::ClassDB::bind_method(D_METHOD("is_map_valid"), &PermissiveVisibilityDataGDExt::is_map_valid);
+	godot::ClassDB::bind_method(D_METHOD("to_map_index", "x", "y"), &PermissiveVisibilityDataGDExt::to_map_index);
+	godot::ClassDB::bind_method(D_METHOD("to_map_index", "v"), &PermissiveVisibilityDataGDExt::to_map_index);
+	godot::ClassDB::bind_method(D_METHOD("initialize_map", "losBlockerData", "mapSize"), &PermissiveVisibilityDataGDExt::initialize_map);
+	godot::ClassDB::bind_method(D_METHOD("blocks_light", "x", "y"), &PermissiveVisibilityDataGDExt::blocks_light);
+	godot::ClassDB::bind_method(D_METHOD("set_visible", "x", "y"), &PermissiveVisibilityDataGDExt::set_visible);
+	godot::ClassDB::bind_method(D_METHOD("clear_maps"), &PermissiveVisibilityDataGDExt::clear_maps);
+	godot::ClassDB::bind_method(D_METHOD("clear_visibility_cache"), &PermissiveVisibilityDataGDExt::clear_visibility_cache);
 }

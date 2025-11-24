@@ -11,7 +11,7 @@ class PermissiveVisibilityInterfaceGDExt : public RefCounted {
 	GDCLASS(PermissiveVisibilityInterfaceGDExt, RefCounted)
 
 private:
-	PermissiveVisibilityDataGDExt data;
+	PermissiveVisibilityDataGDExt *data;
 
 protected:
 	static void _bind_methods();
@@ -34,6 +34,6 @@ public:
 
 	void clear_maps();
 
-	PermissiveVisibilityInterfaceGDExt() = default;
+	PermissiveVisibilityInterfaceGDExt();
 	~PermissiveVisibilityInterfaceGDExt();
 };

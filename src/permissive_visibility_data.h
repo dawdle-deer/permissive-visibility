@@ -4,7 +4,12 @@
 
 using namespace godot;
 
-class PermissiveVisibilityDataGDExt {
+class PermissiveVisibilityDataGDExt : public RefCounted {
+	GDCLASS(PermissiveVisibilityDataGDExt, RefCounted)
+
+protected:
+	static void _bind_methods();
+
 public:
 	bool *losBlockerMap = nullptr;
 	bool **visibilityMap = nullptr; // Note: a multidimensional array of pointers to multidimensional arrays of bools seems pretty inefficient. is this necessary?
@@ -15,7 +20,7 @@ public:
 	bool is_in_bounds(int x, int y);
 	bool is_map_valid();
 	int to_map_index(int x, int y);
-	int to_map_index(Vector2i pos);
+	int to_map_index_v(Vector2i pos);
 
 	void initialize_map(PackedByteArray losBlockerData, Vector2i mapSize);
 
